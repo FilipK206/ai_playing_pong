@@ -156,8 +156,9 @@ class Game:
         self.score_player = 0
         self.score_opponent = 0
 
-        self.player_lives = 5
-        self.opponent_lives = 5
+        self.lives = 5
+        self.player_lives = self.lives
+        self.opponent_lives = self.lives
 
         self.ball_speed = 8
         self.opponent_speed = 8
