@@ -142,8 +142,9 @@ class Game:
 
         self.background_color = pygame.Color('grey12')
         self.light_grey = (200, 200, 200)
-        self.menu_screen = menu_screen
 
+        self.menu_screen = menu_screen
+        self.single_player = single_player
         if single_player:
             self.ball = Ball(self.screen_width / 2 - 10, self.screen_height / 2 - 10, 20, 8, self.screen_height, self.screen_width)
             self.player = Paddle(self.screen_width - 25, self.screen_height / 2 - 70, 10, 140, 9, self.screen_height)
@@ -253,14 +254,15 @@ class Game:
             self.ball.wall_collision()
             self.ball_collision()
 
-            self.opponent_movement()
-            self.player_movement()
+            if self.single_player:
+                self.opponent_movement()
+                self.player_movement()
 
             self.ball_reset_check()
 
-            pygame.display.flip()
-
             self.clock.tick(60)
+
+            pygame.display.flip()
 
             if self.menu_screen:
                 if self.player_lives < 0:
@@ -286,9 +288,10 @@ class Game:
                                              "Try next time to be better.", self.score_player, self.score_opponent)
                     result_menu.display_menu()
                     break
-
             elif self.game_time_sec < 0:
                 pygame.quit()
+
+
 
 if __name__ == "__main__":
     pygame.init()
