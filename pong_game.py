@@ -125,7 +125,7 @@ class ResultMenu:
             pygame.display.update()
 
 class Game:
-    def __init__(self):
+    def __init__(self, single_player=True, first_player=None, second_player=None, menu_screen=True):
         self.screen_width = 1080
         self.screen_height = 720
 
@@ -142,10 +142,15 @@ class Game:
 
         self.background_color = pygame.Color('grey12')
         self.light_grey = (200, 200, 200)
+        self.menu_screen = menu_screen
 
-        self.ball = Ball(self.screen_width / 2 - 10, self.screen_height / 2 - 10, 20, 8, self.screen_height, self.screen_width)
-        self.player = Paddle(self.screen_width - 25, self.screen_height / 2 - 70, 10, 140, 9, self.screen_height)
-        self.opponent = Paddle(15, self.screen_height / 2 - 70, 10, 140, 9, self.screen_height)
+        if single_player:
+            self.ball = Ball(self.screen_width / 2 - 10, self.screen_height / 2 - 10, 20, 8, self.screen_height, self.screen_width)
+            self.player = Paddle(self.screen_width - 25, self.screen_height / 2 - 70, 10, 140, 9, self.screen_height)
+            self.opponent = Paddle(15, self.screen_height / 2 - 70, 10, 140, 9, self.screen_height)
+        else:
+            self.player = first_player
+            self.opponent = second_player
 
         self.score_player = 0
         self.score_opponent = 0
@@ -227,8 +232,9 @@ class Game:
             self.player_lives -= 1
 
     def run(self):
-        main_menu = MainMenu(self.screen, self.screen_width, self.screen_height)
-        main_menu.display_menu()
+        if self.menu_screen:
+            main_menu = MainMenu(self.screen, self.screen_width, self.screen_height)
+            main_menu.display_menu()
 
         running = True
         while running:
@@ -256,29 +262,33 @@ class Game:
 
             self.clock.tick(60)
 
-            if self.player_lives < 0:
-                result_menu = ResultMenu(self.screen, self.screen_width, self.screen_height, "You have lost.",
-                                         "Try next time to be better.", self.score_player, self.score_opponent)
-                result_menu.display_menu()
-                break
+            if self.menu_screen:
+                if self.player_lives < 0:
+                    result_menu = ResultMenu(self.screen, self.screen_width, self.screen_height, "You have lost.",
+                                             "Try next time to be better.", self.score_player, self.score_opponent)
+                    result_menu.display_menu()
+                    break
 
-            if self.opponent_lives < 0 or (self.game_time_sec < 0 and self.score_player > self.score_opponent):
-                result_menu = ResultMenu(self.screen, self.screen_width, self.screen_height, "You have won!",
-                                         "You are the best!", self.score_player, self.score_opponent)
-                result_menu.display_menu()
-                break
+                if self.opponent_lives < 0 or (self.game_time_sec < 0 and self.score_player > self.score_opponent):
+                    result_menu = ResultMenu(self.screen, self.screen_width, self.screen_height, "You have won!",
+                                             "You are the best!", self.score_player, self.score_opponent)
+                    result_menu.display_menu()
+                    break
 
-            elif self.game_time_sec < 0 and self.score_player < self.score_opponent:
-                result_menu = ResultMenu(self.screen, self.screen_width, self.screen_height, "You have lost.",
-                                         "Try next time to be better.", self.score_player, self.score_opponent)
-                result_menu.display_menu()
-                break
+                elif self.game_time_sec < 0 and self.score_player < self.score_opponent:
+                    result_menu = ResultMenu(self.screen, self.screen_width, self.screen_height, "You have lost.",
+                                             "Try next time to be better.", self.score_player, self.score_opponent)
+                    result_menu.display_menu()
+                    break
 
-            elif self.game_time_sec < 0 and self.score_player == self.score_opponent:
-                result_menu = ResultMenu(self.screen, self.screen_width, self.screen_height, "It is a draw.",
-                                         "Try next time to be better.", self.score_player, self.score_opponent)
-                result_menu.display_menu()
-                break
+                elif self.game_time_sec < 0 and self.score_player == self.score_opponent:
+                    result_menu = ResultMenu(self.screen, self.screen_width, self.screen_height, "It is a draw.",
+                                             "Try next time to be better.", self.score_player, self.score_opponent)
+                    result_menu.display_menu()
+                    break
+
+            elif self.game_time_sec < 0:
+                pygame.quit()
 
 if __name__ == "__main__":
     pygame.init()
