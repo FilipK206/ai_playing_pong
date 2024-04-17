@@ -159,6 +159,8 @@ class Game:
         self.lives = 5
         self.player_lives = self.lives
         self.opponent_lives = self.lives
+        self.left_hits = 0
+        self.right_hits = 0
 
         self.ball_speed = 8
         self.opponent_speed = 8
@@ -174,7 +176,7 @@ class Game:
         pygame.draw.aaline(self.screen, self.light_grey, (self.screen_width / 2, 0), (self.screen_width / 2, self.screen_height))
         pygame.draw.ellipse(self.screen, self.light_grey, [self.screen_width / 2 - 110, self.screen_height / 2 - 110, 220, 220], 2)
 
-    def dynamic_background(self):
+    def dynamic_background(self, show_duration=False, duration=None):
         score_player_label = self.main_font.render(f"Score Player: {self.score_player}", 1, self.light_grey)
         score_opponent_label = self.main_font.render(f"Score Opponent: {self.score_opponent}", 1, self.light_grey)
         self.screen.blit(score_player_label, (self.screen_width - 150, 0 + 15))
@@ -184,9 +186,12 @@ class Game:
         lives_opponent_label = self.main_font.render(f"Lives: {self.opponent_lives}", 1, self.light_grey)
         self.screen.blit(lives_player_label, (self.screen_width - 150, 0 + 35))
         self.screen.blit(lives_opponent_label, (0 + 50, 0 + 35))
-
-        timer_label = self.timer_font.render(f"Timer: {self.game_time_sec} sec", 1, self.light_grey)
-        self.screen.blit(timer_label, (self.screen_width / 2 - 70, 0 + 20))
+        if show_duration:
+            timer_label = self.timer_font.render(f"Timer: {duration} sec", 1, self.light_grey)
+            self.screen.blit(timer_label, (self.screen_width / 2 - 70, 0 + 20))
+        else:
+            timer_label = self.timer_font.render(f"Timer: {self.game_time_sec} sec", 1, self.light_grey)
+            self.screen.blit(timer_label, (self.screen_width / 2 - 70, 0 + 20))
 
     def ball_paddle_collision(self, ball, paddle):
         paddle_collision_point = ball.rect.y + ball.rect.height / 2 - (paddle.rect.y + paddle.rect.height / 2)
@@ -229,9 +234,12 @@ class Game:
         if self.ball.rect.left <= - 45:
             self.ball.reset()
             self.opponent_lives -= 1
+            self.left_hits += 1
+
         if self.ball.rect.right >= self.screen_width + 45:
             self.ball.reset()
             self.player_lives -= 1
+            self.right_hits += 1
 
     def run(self):
         if self.menu_screen:

@@ -13,10 +13,11 @@ class PongGame:
         self.left_paddle = self.game.opponent
         self.right_paddle = self.game.player
         self.ball = self.game.ball
+        self.duration = 0
 
     def loop(self):
         self.game.static_background()
-        self.game.dynamic_background()
+        self.game.dynamic_background(show_duration=True, duration=self.duration)
         self.game.draw_mov_obj()
 
         self.game.ball.move()
@@ -36,6 +37,9 @@ class PongGame:
                 if event.type == pygame.QUIT:
                     run = False
                     break
+                if event.type == self.game.timer_event:
+                    self.duration += 1
+
 
             keys = pygame.key.get_pressed()
             if keys[pygame.K_w]:
@@ -68,6 +72,8 @@ class PongGame:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     quit()
+                if event.type == self.game.timer_event:
+                    self.duration += 1
 
             output1 = net1.activate(
                 (self.left_paddle.rect.y, self.ball.rect.y, abs(self.left_paddle.rect.x - self.ball.rect.x)))
@@ -94,13 +100,13 @@ class PongGame:
             self.loop()
             pygame.display.flip()
 
-            if self.game.score_player >= 1 or self.game.score_opponent >= 1 or self.game.player_lives <= 4:
+            if self.game.player_lives <= 4 or self.game.opponent_lives <= 4 or self.game.score_player >= 50:
                 self.calculate_fitness(genome1, genome2, self.game)
                 break
 
     def calculate_fitness(self, genome1, genome2, game):
-        genome1.fitness += (game.lives - game.player_lives)
-        genome2.fitness += (game.lives - game.opponent_lives)
+        genome1.fitness += game.right_hits + self.duration
+        genome2.fitness += game.left_hits + self.duration
 
 
 def eval_genomes(genomes, config):
@@ -117,7 +123,7 @@ def eval_genomes(genomes, config):
 
 
 def run_neat(config):
-    # p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-1')
+    # p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-4')
     p = neat.Population(config)
 
     p.add_reporter(neat.StdOutReporter(True))
@@ -125,10 +131,18 @@ def run_neat(config):
     p.add_reporter(stats)
     p.add_reporter(neat.Checkpointer(1))
 
-    winner = p.run(eval_genomes, 50)
+    winner = p.run(eval_genomes, 5)
 
     with open("best.pickle", "wb") as f:
         pickle.dump(winner, f)
+
+
+def test_ai(config):
+    with open("best.pickle", "rb") as f:
+        winner = pickle.load(f)
+
+    game = PongGame()
+    game.test_ai(winner, config)
 
 
 if __name__ == "__main__":
@@ -139,4 +153,5 @@ if __name__ == "__main__":
                          neat.DefaultSpeciesSet, neat.DefaultStagnation,
                          config_path)
 
-    run_neat(config)
+    # run_neat(config)
+    test_ai(config)
